@@ -244,6 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     updateScoreboard(); // Update scoreboard after score change
                 }
+
+                // Hide the modal after 5 seconds
+                setTimeout(() => {
+                    gamblerModal.style.display = 'none';
+                }, 5000); // 5000 milliseconds = 5 seconds
             }
         }
 
