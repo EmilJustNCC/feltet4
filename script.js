@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Function to handle Gambler! actions
-    function handleGamblerAction() {
+    function handleGamblerAction(fieldElement) { // Accept field element as argument
         const actions = [
             "Lose 2 points",
             "Get 1 drink for free from [random name]", // Modified string
@@ -245,9 +245,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateScoreboard(); // Update scoreboard after score change
                 }
 
-                // Hide the modal after 5 seconds
+                // Hide the modal after 5 seconds and remove focus from the field
                 setTimeout(() => {
                     gamblerModal.style.display = 'none';
+                    if (fieldElement) {
+                        fieldElement.blur(); // Remove focus
+                    }
                 }, 5000); // 5000 milliseconds = 5 seconds
             }
         }
@@ -262,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Check if the modal is open and the click is outside the modal content
         if (gamblerModal.style.display === 'flex' && !modalContent.contains(event.target) && event.target !== modalContent) {
             gamblerModal.style.display = 'none';
+            // No field element to blur here as the click was outside any field
         }
     });
 
@@ -399,16 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add click listeners to fields for Gambler! action
     fields.forEach(field => {
-        field.addEventListener('click', () => {
+        field.addEventListener('click', () => { // Corrected syntax here
             if (field.textContent === "Gambler!") {
-                handleGamblerAction();
+                handleGamblerAction(field); // Pass the field element
             }
         });
         field.addEventListener('touchstart', (event) => {
             // Prevent the default touch behavior (like scrolling)
             event.preventDefault();
             if (field.textContent === "Gambler!") {
-                handleGamblerAction();
+                handleGamblerAction(field); // Pass the field element
             }
         });
     });
