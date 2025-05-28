@@ -399,6 +399,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleGamblerAction();
             }
         });
+        field.addEventListener('touchstart', (event) => {
+            // Prevent the default touch behavior (like scrolling)
+            event.preventDefault();
+            if (field.textContent === "Gambler!") {
+                handleGamblerAction();
+            }
+        });
     });
 
     // Rules button click handler
