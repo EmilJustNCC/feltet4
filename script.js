@@ -158,15 +158,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update the actual fields
         fields.forEach((field, index) => {
-            field.textContent = gridContent[index];
+            const content = gridContent[index];
+            field.innerHTML = `<span>${content}</span>`; // Wrap content in span
             field.classList.remove('highlight', 'winner', 'bonus', 'gambler', 'name'); // Reset classes
 
             // Add specific classes for styling
-            if (names.includes(field.textContent)) {
+            if (names.includes(content)) {
                 field.classList.add('name');
-            } else if (field.textContent === "Bonus") {
+            } else if (content === "Bonus") {
                 field.classList.add('bonus');
-            } else if (field.textContent === "Gambler!") {
+            } else if (content === "Gambler!") {
                 field.classList.add('gambler');
             }
         });
@@ -252,7 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close gambler modal when clicking outside
     window.addEventListener('click', (event) => {
-        if (event.target == gamblerModal) {
+        const modalContent = gamblerModal.querySelector('.modal-content');
+        // Check if the modal is open and the click is outside the modal content
+        if (gamblerModal.style.display === 'flex' && !modalContent.contains(event.target) && event.target !== modalContent) {
             gamblerModal.style.display = 'none';
         }
     });
@@ -294,15 +297,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const elapsed = Date.now() - animationStartTime;
 
             if (elapsed < animationDuration) {
-                 if (currentIndex > -1) {
-                    // Remove highlight from previous field (if not the very first step)
-                    nameFields[currentIndex].classList.remove('highlight');
-                }
+                 // Remove highlight from the previously highlighted field (if any)
+                 // Find the currently highlighted field among nameFields
+                 const currentlyHighlighted = nameFields.find(field => field.classList.contains('highlight'));
+                 if (currentlyHighlighted) {
+                     currentlyHighlighted.classList.remove('highlight');
+                 }
 
-                // Calculate next index
-                currentIndex = (currentIndex + 1) % totalNameFields;
+                // Select a random index from the name fields for the next highlight
+                currentIndex = Math.floor(Math.random() * totalNameFields);
 
-                // Add highlight to current field
+                // Add highlight to the randomly selected field
                 nameFields[currentIndex].classList.add('highlight');
 
                 // Calculate delay - gradually increase delay after slowDownStartTime
@@ -318,18 +323,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(animateSpin, delay);
             } else {
                 // Animation finished, determine the winner
-                let winnerIndex = currentIndex;
-                let winnerName = nameFields[winnerIndex].textContent;
+                // Ensure the final highlighted field is the actual winner
+                const finalWinnerIndex = currentIndex; // The last highlighted field is the winner
+                let winnerName = nameFields[finalWinnerIndex].textContent;
 
                 // Ensure the winner is not the same as the last winner
-                while (winnerName === lastWinnerName) {
-                    winnerIndex = Math.floor(Math.random() * totalNameFields);
-                    winnerName = nameFields[winnerIndex].textContent;
+                // If it is, pick a new random winner from the name fields
+                if (winnerName === lastWinnerName) {
+                     const availableWinners = nameFields.filter(field => field.textContent !== lastWinnerName);
+                     if (availableWinners.length > 0) {
+                         const newWinnerField = availableWinners[Math.floor(Math.random() * availableWinners.length)];
+                         winnerName = newWinnerField.textContent;
+                         // Find the index of the new winner in the original nameFields array
+                         currentIndex = nameFields.indexOf(newWinnerField);
+                     } else {
+                         // If all name fields are the last winner (unlikely with 20 name fields),
+                         // just keep the current winner.
+                         console.warn("All name fields are the same as the last winner. Keeping current winner.");
+                     }
                 }
 
-                // Highlight the winner
-                nameFields[winnerIndex].classList.add('winner');
-                // Keep highlight on winner until next round
+
+                // Ensure only the final winner is highlighted and has the 'winner' class
+                fields.forEach(field => {
+                    field.classList.remove('highlight', 'winner');
+                });
+                nameFields[currentIndex].classList.add('highlight', 'winner');
+
 
                 // Update the last winner
                 lastWinnerName = winnerName;
@@ -379,6 +399,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 handleGamblerAction();
             }
         });
+    });
+
+    // Rules button click handler
+    const rulesButton = document.getElementById('rules-button');
+    const rulesContent = document.getElementById('rules-content');
+
+    rulesButton.addEventListener('click', () => {
+        if (rulesContent.style.display === 'block') {
+            rulesContent.style.display = 'none';
+        } else {
+            rulesContent.style.display = 'block';
+        }
     });
 
 });
